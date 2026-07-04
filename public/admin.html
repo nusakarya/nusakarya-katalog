@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin — Katalog NusaKarya</title>
+    <meta name="robots" content="noindex, nofollow" />
+    <style>
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: system-ui, -apple-system, sans-serif;
+        background: #f1f5f9;
+        color: #0f172a;
+        padding: 2rem 1rem 4rem;
+      }
+      .container { max-width: 960px; margin: 0 auto; }
+      h1 { font-size: 1.4rem; margin: 0 0 0.25rem; }
+      .subtitle { color: #64748b; margin: 0 0 1.5rem; font-size: 0.9rem; }
+
+      .token-card {
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 1rem;
+        padding: 1.25rem;
+        margin-bottom: 1.5rem;
+      }
+      .token-row { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+      input[type='password'], input[type='text'] {
+        flex: 1;
+        min-width: 200px;
+        padding: 0.55rem 0.75rem;
+        border-radius: 0.5rem;
+        border: 1px solid #cbd5e1;
+        font-size: 0.9rem;
+      }
+      button {
+        cursor: pointer;
+        border: none;
+        border-radius: 0.5rem;
+        padding: 0.55rem 1rem;
+        font-weight: 600;
+        font-size: 0.9rem;
+      }
+      .btn-primary { background: #0f766e; color: #fff; }
+      .btn-danger { background: #fff; color: #be123c; border: 1px solid #fecdd3; }
+      .btn-danger:hover { background: #fef2f2; }
+
+      #status { margin-top: 0.6rem; font-size: 0.85rem; color: #be123c; }
+
+      table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 1rem; overflow: hidden; }
+      th, td { padding: 0.65rem 0.8rem; text-align: left; font-size: 0.85rem; border-bottom: 1px solid #e2e8f0; }
+      th { background: #f8fafc; font-weight: 700; color: #475569; }
+      tr:last-child td { border-bottom: none; }
+      td a { color: #0f766e; font-weight: 600; text-decoration: none; }
+      .empty { padding: 2rem; text-align: center; color: #64748b; }
+      .count-pill {
+        display: inline-block;
+        padding: 0.1rem 0.5rem;
+        border-radius: 999px;
+        background: #f1f5f9;
+        font-weight: 700;
+        font-size: 0.8rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Admin Katalog</h1>
+      <p class="subtitle">
+        Lihat, pantau, dan hapus katalog yang terdaftar. Batas jumlah produk per katalog diatur
+        di <code>src/constants.ts</code> (MAX_PRODUCTS) — ubah nilainya lalu deploy ulang.
+      </p>
+
+      <div class="token-card">
+        <div class="token-row">
+          <input id="token-input" type="password" placeholder="Admin token" autocomplete="off" />
+          <button class="btn-primary" id="load-btn">Muat Data</button>
+        </div>
+        <div id="status"></div>
+      </div>
+
+      <div id="table-wrap"></div>
+    </div>
+
+    <script>
+      (function () {
+        var TOKEN_KEY = 'nusakarya_admin_token';
+        var tokenInput = document.getElementById('token-input');
+        var statusEl = document.getElementById('status');
+        var tableWrap = document.getElementById('table-wrap');
+
+        tokenInput.value = localStorage.getItem(TOKEN_KEY) || '';
+
+        function escapeHtml(value) {
+          return String(value)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+        }
+
+        function authHeaders() {
+          return { Authorization: 'Bearer ' + tokenInput.value.trim() };
+        }
+
+        function renderTable(items) {
+          if (!items.length) {
+            tableWrap.innerHTML = '<div class="empty">Belum ada katalog terdaftar.</div>';
+            return;
+          }
+          var rows = items
+            .map(function (item) {
+              var created = new Date(item.createdAt).toLocaleString('id-ID');
+              return (
+                '<tr data-slug="' + escapeHtml(item.slug) + '">' +
+                '<td><a href="/k/' + escapeHtml(item.slug) + '" target="_blank" rel="noopener noreferrer">' +
+                escapeHtml(item.businessName) + '</a><br><small>' + escapeHtml(item.city || '-') + '</small></td>' +
+                '<td>' + escapeHtml(item.whatsapp) + '</td>' +
+                '<td><span class="count-pill">' + item.productCount + '</span></td>' +
+                '<td>' + item.views + '</td>' +
+                '<td>' + item.clicks + '</td>' +
+                '<td>' + item.chatClicks + '</td>' +
+                '<td>' + created + '</td>' +
+                '<td><button class="btn-danger" data-action="delete">Hapus</button></td>' +
+                '</tr>'
+              );
+            })
+            .join('');
+
+          tableWrap.innerHTML =
+            '<table><thead><tr>' +
+            '<th>Usaha</th><th>WhatsApp</th><th>Produk</th><th>Views</th><th>Klik Pesan</th><th>Klik Chat</th><th>Dibuat</th><th></th>' +
+            '</tr></thead><tbody>' + rows + '</tbody></table>';
+
+          tableWrap.querySelectorAll('[data-action="delete"]').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+              var row = btn.closest('tr');
+              var slug = row.getAttribute('data-slug');
+              if (!window.confirm('Hapus katalog "' + slug + '"? Tindakan ini tidak bisa dibatalkan.')) return;
+              deleteCatalog(slug);
+            });
+          });
+        }
+
+        function loadCatalogs() {
+          localStorage.setItem(TOKEN_KEY, tokenInput.value.trim());
+          statusEl.textContent = 'Memuat...';
+          fetch('/api/admin/catalogs', { headers: authHeaders() })
+            .then(function (res) {
+              if (res.status === 401) throw new Error('Token salah atau kosong.');
+              if (!res.ok) throw new Error('Gagal memuat data (' + res.status + ').');
+              return res.json();
+            })
+            .then(function (items) {
+              statusEl.textContent = '';
+              renderTable(items);
+            })
+            .catch(function (err) {
+              statusEl.textContent = err.message;
+              tableWrap.innerHTML = '';
+            });
+        }
+
+        function deleteCatalog(slug) {
+          fetch('/api/admin/catalogs/' + encodeURIComponent(slug), {
+            method: 'DELETE',
+            headers: authHeaders(),
+          })
+            .then(function (res) {
+              if (!res.ok) throw new Error('Gagal menghapus (' + res.status + ').');
+              loadCatalogs();
+            })
+            .catch(function (err) {
+              statusEl.textContent = err.message;
+            });
+        }
+
+        document.getElementById('load-btn').addEventListener('click', loadCatalogs);
+        if (tokenInput.value) loadCatalogs();
+      })();
+    </script>
+  </body>
+</html>

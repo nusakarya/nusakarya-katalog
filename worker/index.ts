@@ -1,11 +1,21 @@
-import type { CatalogSubmission, CreateCatalogPayload, CreateCatalogResponse } from '../src/types'
+import { MAX_PRODUCTS } from '../src/constants'
+import type { CatalogSubmission, CatalogSummary, CreateCatalogPayload, CreateCatalogResponse } from '../src/types'
 import type { Env } from './env'
 import { buildWaLink, renderCatalogPage } from './catalogPage'
 import { DEMO_SLUG, DEMO_SUBMISSION, NUSAKARYA_WHATSAPP } from './demoData'
-import { checkRateLimit, generateUniqueSlug, getSubmission, incrementCounter, saveSubmission } from './storage'
+import {
+  checkRateLimit,
+  deleteSubmission,
+  generateUniqueSlug,
+  getCounter,
+  getSubmission,
+  incrementCounter,
+  listSubmissions,
+  saveSubmission,
+} from './storage'
 
-const MAX_PRODUCTS = 6
 const WHATSAPP_PATTERN = /^62\d{8,13}$/
+const MAPS_URL_MAX_LENGTH = 300
 
 const jsonResponse = (body: unknown, status = 200): Response =>
   new Response(JSON.stringify(body), {
@@ -23,6 +33,17 @@ const validatePayload = (payload: CreateCatalogPayload): string => {
   }
   if (payload.tagline && payload.tagline.length > 140) return 'Tagline terlalu panjang.'
   if (payload.city && payload.city.length > 60) return 'Nama kota terlalu panjang.'
+  if (payload.mapsUrl) {
+    if (payload.mapsUrl.length > MAPS_URL_MAX_LENGTH) return 'Link Google Maps terlalu panjang.'
+    try {
+      const parsed = new URL(payload.mapsUrl)
+      if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') {
+        return 'Link Google Maps tidak valid.'
+      }
+    } catch {
+      return 'Link Google Maps tidak valid.'
+    }
+  }
   if (!Array.isArray(payload.products) || payload.products.length === 0) {
     return 'Isi minimal 1 produk.'
   }
@@ -62,6 +83,7 @@ const handleCreateCatalog = async (request: Request, env: Env): Promise<Response
     tagline: payload.tagline?.trim() ?? '',
     whatsapp: payload.whatsapp.trim(),
     city: payload.city?.trim() ?? '',
+    mapsUrl: payload.mapsUrl?.trim() || undefined,
     products: payload.products.map((product) => ({
       name: product.name.trim(),
       price: product.price.trim(),
@@ -134,12 +156,58 @@ const handleWaChatRedirect = async (slug: string, env: Env): Promise<Response> =
   return Response.redirect(buildWaLink(submission.whatsapp, message), 302)
 }
 
+const isAuthorizedAdmin = (request: Request, env: Env): boolean => {
+  if (!env.ADMIN_TOKEN) return false
+  const header = request.headers.get('authorization') ?? ''
+  const token = header.replace(/^Bearer\s+/i, '')
+  return token === env.ADMIN_TOKEN
+}
+
+const handleListCatalogs = async (env: Env): Promise<Response> => {
+  const submissions = await listSubmissions(env.CATALOG_KV)
+  const summaries: CatalogSummary[] = await Promise.all(
+    submissions
+      .sort((a, b) => b.createdAt - a.createdAt)
+      .map(async (submission) => ({
+        slug: submission.slug,
+        businessName: submission.businessName,
+        whatsapp: submission.whatsapp,
+        city: submission.city,
+        productCount: submission.products.length,
+        createdAt: submission.createdAt,
+        views: await getCounter(env.CATALOG_KV, `counter:${submission.slug}:views`),
+        clicks: await getCounter(env.CATALOG_KV, `counter:${submission.slug}:clicks`),
+        chatClicks: await getCounter(env.CATALOG_KV, `counter:${submission.slug}:chat_clicks`),
+      })),
+  )
+  return jsonResponse(summaries)
+}
+
+const handleDeleteCatalog = async (slug: string, env: Env): Promise<Response> => {
+  await deleteSubmission(env.CATALOG_KV, slug)
+  return new Response(null, { status: 204 })
+}
+
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url)
 
     if (url.pathname === '/api/catalog' && request.method === 'POST') {
       return handleCreateCatalog(request, env)
+    }
+
+    if (url.pathname.startsWith('/api/admin/')) {
+      if (!isAuthorizedAdmin(request, env)) {
+        return jsonResponse({ message: 'Unauthorized' }, 401)
+      }
+      if (url.pathname === '/api/admin/catalogs' && request.method === 'GET') {
+        return handleListCatalogs(env)
+      }
+      const adminDeleteMatch = url.pathname.match(/^\/api\/admin\/catalogs\/([a-z0-9-]+)$/)
+      if (adminDeleteMatch && request.method === 'DELETE') {
+        return handleDeleteCatalog(adminDeleteMatch[1], env)
+      }
+      return jsonResponse({ message: 'Not found' }, 404)
     }
 
     const waChatMatch = url.pathname.match(/^\/k\/([a-z0-9-]+)\/wa\/chat$/)

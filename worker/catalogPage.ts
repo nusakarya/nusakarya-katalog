@@ -8,7 +8,7 @@ const escapeHtml = (value: string): string =>
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;')
 
-const isSafeImageUrl = (value: string | undefined): value is string => {
+const isSafeUrl = (value: string | undefined): value is string => {
   if (!value) return false
   try {
     const url = new URL(value)
@@ -53,7 +53,7 @@ export const renderCatalogPage = (data: CatalogSubmission, options?: { isDemo?: 
     .map((product, index) => {
       const productName = escapeHtml(product.name)
       const productPrice = escapeHtml(product.price)
-      const mediaHtml = isSafeImageUrl(product.imageUrl)
+      const mediaHtml = isSafeUrl(product.imageUrl)
         ? `<img class="product__image" src="${escapeHtml(product.imageUrl)}" alt="${productName}" loading="lazy" />`
         : `<div class="product__monogram" style="background: ${MONOGRAM_PALETTE[index % MONOGRAM_PALETTE.length]}">${escapeHtml(getInitials(product.name))}</div>`
 
@@ -132,17 +132,27 @@ export const renderCatalogPage = (data: CatalogSubmission, options?: { isDemo?: 
       }
       .hero h1 { position: relative; font-size: 1.75rem; margin: 0 0 0.35rem; }
       .hero p { position: relative; margin: 0.2rem 0; opacity: 0.92; }
-      .hero__meta {
+      .hero__meta-row {
         position: relative;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.5rem;
+        margin-top: 0.75rem;
+      }
+      .hero__meta {
         display: inline-flex;
         gap: 0.4rem;
         align-items: center;
-        margin-top: 0.75rem;
         font-size: 0.85rem;
         background: rgba(255, 255, 255, 0.16);
         padding: 0.3rem 0.8rem;
         border-radius: 999px;
+        text-decoration: none;
+        color: #fff;
+        transition: background 0.2s ease;
       }
+      a.hero__meta:hover { background: rgba(255, 255, 255, 0.28); }
 
       .grid {
         display: grid;
@@ -289,7 +299,14 @@ export const renderCatalogPage = (data: CatalogSubmission, options?: { isDemo?: 
       <div class="avatar" aria-hidden="true">${initials}</div>
       <h1>${safeName}</h1>
       ${safeTagline ? `<p>${safeTagline}</p>` : ''}
-      ${safeCity ? `<span class="hero__meta">📍 ${safeCity}</span>` : ''}
+      <div class="hero__meta-row">
+        ${safeCity ? `<span class="hero__meta">📍 ${safeCity}</span>` : ''}
+        ${
+          isSafeUrl(data.mapsUrl)
+            ? `<a class="hero__meta" href="${escapeHtml(data.mapsUrl)}" target="_blank" rel="noopener noreferrer">🗺️ Lihat di Maps</a>`
+            : ''
+        }
+      </div>
     </div>
 
     <div class="container">

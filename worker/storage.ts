@@ -55,6 +55,31 @@ export const incrementCounter = async (kv: KVNamespace, key: string): Promise<vo
   await kv.put(key, String(current + 1))
 }
 
+export const getCounter = async (kv: KVNamespace, key: string): Promise<number> =>
+  Number((await kv.get(key)) ?? '0')
+
+// KV list() caps at 1000 keys per call — fine for pilot scale, would need
+// pagination (cursor) if this ever grows past that.
+export const listSubmissions = async (kv: KVNamespace): Promise<CatalogSubmission[]> => {
+  const { keys } = await kv.list({ prefix: 'catalog:' })
+  const submissions = await Promise.all(
+    keys.map(async (key) => {
+      const raw = await kv.get(key.name)
+      return raw ? (JSON.parse(raw) as CatalogSubmission) : null
+    }),
+  )
+  return submissions.filter((submission): submission is CatalogSubmission => submission !== null)
+}
+
+export const deleteSubmission = async (kv: KVNamespace, slug: string): Promise<void> => {
+  await Promise.all([
+    kv.delete(`catalog:${slug}`),
+    kv.delete(`counter:${slug}:views`),
+    kv.delete(`counter:${slug}:clicks`),
+    kv.delete(`counter:${slug}:chat_clicks`),
+  ])
+}
+
 const RATE_LIMIT_MAX_PER_HOUR = 5
 
 export const checkRateLimit = async (kv: KVNamespace, ip: string): Promise<boolean> => {

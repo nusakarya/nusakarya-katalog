@@ -10,6 +10,7 @@ export type CatalogSubmission = {
   tagline: string
   whatsapp: string
   city: string
+  mapsUrl?: string
   products: Product[]
   createdAt: number
 }
@@ -21,4 +22,16 @@ export type CreateCatalogPayload = Omit<CatalogSubmission, 'slug' | 'createdAt'>
 export type CreateCatalogResponse = {
   slug: string
   url: string
+}
+
+export type CatalogSummary = {
+  slug: string
+  businessName: string
+  whatsapp: string
+  city: string
+  productCount: number
+  createdAt: number
+  views: number
+  clicks: number
+  chatClicks: number
 }

@@ -2,15 +2,15 @@
 import { computed, reactive, ref } from 'vue'
 import QRCode from 'qrcode'
 import ProductFieldRow from './components/ProductFieldRow.vue'
+import { MAX_PRODUCTS } from './constants'
 import type { CreateCatalogPayload, CreateCatalogResponse, Product } from './types'
-
-const MAX_PRODUCTS = 6
 
 const form = reactive({
   businessName: '',
   tagline: '',
   whatsapp: '',
   city: '',
+  mapsUrl: '',
   website: '', // honeypot: real users never fill this
 })
 
@@ -62,6 +62,7 @@ const submit = async (): Promise<void> => {
       tagline: form.tagline.trim(),
       whatsapp: form.whatsapp.trim(),
       city: form.city.trim(),
+      mapsUrl: form.mapsUrl.trim() || undefined,
       products: products.value.filter((p) => p.name.trim() && p.price.trim()),
       website: form.website,
     }
@@ -151,6 +152,20 @@ const copyLink = async (): Promise<void> => {
         <div class="field">
           <label for="city">Kota (opsional)</label>
           <input id="city" v-model="form.city" class="input" type="text" placeholder="Surabaya" />
+        </div>
+
+        <div class="field">
+          <label for="mapsUrl">Link Google Maps (opsional)</label>
+          <input
+            id="mapsUrl"
+            v-model="form.mapsUrl"
+            class="input"
+            type="url"
+            placeholder="https://maps.app.goo.gl/..."
+          />
+          <p class="mt-1 text-xs text-slate-500">
+            Buka lokasi Anda di Google Maps → tombol "Bagikan" → "Salin link", lalu tempel di sini.
+          </p>
         </div>
 
         <div :class="['field', 'honeypot-field']" aria-hidden="true">
