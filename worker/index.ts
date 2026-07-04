@@ -104,12 +104,27 @@ const handleWaRedirect = async (slug: string, productIndex: number, env: Env): P
   return Response.redirect(buildWaLink(submission.whatsapp, message), 302)
 }
 
+const handleWaChatRedirect = async (slug: string, env: Env): Promise<Response> => {
+  const submission = await getSubmission(env.CATALOG_KV, slug)
+  if (!submission) {
+    return new Response('Katalog tidak ditemukan.', { status: 404 })
+  }
+  await incrementCounter(env.CATALOG_KV, `counter:${slug}:chat_clicks`)
+  const message = `Halo ${submission.businessName}, saya lihat katalog Anda dan ingin tanya-tanya.`
+  return Response.redirect(buildWaLink(submission.whatsapp, message), 302)
+}
+
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url)
 
     if (url.pathname === '/api/catalog' && request.method === 'POST') {
       return handleCreateCatalog(request, env)
+    }
+
+    const waChatMatch = url.pathname.match(/^\/k\/([a-z0-9-]+)\/wa\/chat$/)
+    if (waChatMatch) {
+      return handleWaChatRedirect(waChatMatch[1], env)
     }
 
     const waMatch = url.pathname.match(/^\/k\/([a-z0-9-]+)\/wa\/(\d+)$/)
