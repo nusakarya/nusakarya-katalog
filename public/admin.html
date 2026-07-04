@@ -410,11 +410,22 @@
           renderTable(filtered);
         }
 
+        function readErrorMessage(res, fallback) {
+          return res
+            .json()
+            .catch(function () { return {}; })
+            .then(function (body) { return body.message || fallback; });
+        }
+
         function loadCatalogs() {
           statusEl.textContent = 'Memuat...';
           authedFetch('/api/admin/catalogs')
             .then(function (res) {
-              if (res.status === 401) throw new Error('not-signed-in');
+              if (res.status === 401) {
+                return readErrorMessage(res, 'Sesi berakhir, silakan login lagi.').then(function (msg) {
+                  throw new Error(msg);
+                });
+              }
               if (!res.ok) throw new Error('Gagal memuat data (' + res.status + ').');
               return res.json();
             })
@@ -425,13 +436,12 @@
               applyFilter();
             })
             .catch(function (err) {
-              if (err.message === 'not-signed-in') {
-                clearSession();
-                showLogin();
-                return;
-              }
-              statusEl.textContent = err.message;
-              tableWrap.innerHTML = '';
+              // Any 401 here means "not currently a valid admin session" — bounce
+              // to login, but show the server's specific reason (wrong ADMIN_EMAIL
+              // vs. genuinely expired token) instead of failing silently.
+              clearSession();
+              showLogin();
+              loginStatus.textContent = err.message;
             });
         }
 

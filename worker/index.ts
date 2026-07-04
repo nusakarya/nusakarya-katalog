@@ -157,16 +157,26 @@ const handleWaChatRedirect = async (slug: string, env: Env): Promise<Response> =
   return Response.redirect(buildWaLink(submission.whatsapp, message), 302)
 }
 
+type AdminAuthResult = { authorized: true } | { authorized: false; reason: string }
+
 // Only a Firebase-authenticated user whose email matches env.ADMIN_EMAIL may
 // call /api/admin/*. There's no user-management UI — this is a single-admin
-// allowlist, not a general auth system.
-const isAuthorizedAdmin = async (request: Request, env: Env): Promise<boolean> => {
-  if (!env.ADMIN_EMAIL || !env.FIREBASE_PROJECT_ID) return false
+// allowlist, not a general auth system. Returns a specific reason so a
+// "logged in but still 401" case (wrong ADMIN_EMAIL vs. the account used to
+// sign in) is distinguishable from an actually invalid/expired token.
+const checkAdminAuth = async (request: Request, env: Env): Promise<AdminAuthResult> => {
+  if (!env.ADMIN_EMAIL || !env.FIREBASE_PROJECT_ID) {
+    return { authorized: false, reason: 'Admin belum dikonfigurasi di server (ADMIN_EMAIL/FIREBASE_PROJECT_ID kosong).' }
+  }
   const header = request.headers.get('authorization') ?? ''
   const idToken = header.replace(/^Bearer\s+/i, '')
-  if (!idToken) return false
+  if (!idToken) return { authorized: false, reason: 'Token tidak ditemukan.' }
   const identity = await verifyFirebaseIdToken(idToken, env.FIREBASE_PROJECT_ID)
-  return identity?.email?.toLowerCase() === env.ADMIN_EMAIL.toLowerCase()
+  if (!identity) return { authorized: false, reason: 'Token tidak valid atau kedaluwarsa.' }
+  if (!identity.email || identity.email.toLowerCase() !== env.ADMIN_EMAIL.toLowerCase()) {
+    return { authorized: false, reason: 'Email akun ini tidak terdaftar sebagai admin di server.' }
+  }
+  return { authorized: true }
 }
 
 const handleListCatalogs = async (env: Env): Promise<Response> => {
@@ -278,8 +288,9 @@ export default {
     }
 
     if (url.pathname.startsWith('/api/admin/')) {
-      if (!(await isAuthorizedAdmin(request, env))) {
-        return jsonResponse({ message: 'Unauthorized' }, 401)
+      const auth = await checkAdminAuth(request, env)
+      if (!auth.authorized) {
+        return jsonResponse({ message: auth.reason }, 401)
       }
       if (url.pathname === '/api/admin/catalogs/export' && request.method === 'GET') {
         return handleExportCatalogs(request, env)
