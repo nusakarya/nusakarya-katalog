@@ -1,4 +1,9 @@
 import type { CatalogSubmission } from '../src/types'
+import { DEMO_SLUG } from './demoData'
+
+// Slugs that must never be handed out to a real submission, so a business
+// named e.g. "Contoh" can't shadow the fixed demo page at /k/contoh.
+const RESERVED_SLUGS = new Set([DEMO_SLUG])
 
 // Strips combining diacritics (U+0300-U+036F) left behind by NFKD normalization,
 // e.g. turns "kopi susu" style accented input into plain ASCII for slugs.
@@ -19,7 +24,8 @@ export const generateUniqueSlug = async (
 ): Promise<string> => {
   const base = slugify(businessName) || 'toko'
   for (let attempt = 0; attempt < 5; attempt += 1) {
-    const candidate = attempt === 0 ? base : `${base}-${randomSuffix()}`
+    const candidate = attempt === 0 && !RESERVED_SLUGS.has(base) ? base : `${base}-${randomSuffix()}`
+    if (RESERVED_SLUGS.has(candidate)) continue
     const existing = await kv.get(`catalog:${candidate}`)
     if (!existing) return candidate
   }

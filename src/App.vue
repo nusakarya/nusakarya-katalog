@@ -103,6 +103,9 @@ const copyLink = async (): Promise<void> => {
         Isi form di bawah, dapatkan halaman katalog siap dibagikan ke pelanggan lewat WhatsApp
         atau kode QR. Gratis, tanpa perlu website sendiri.
       </p>
+      <a class="mt-3 inline-flex text-sm font-semibold text-brand-dark" href="/k/contoh" target="_blank" rel="noopener noreferrer">
+        👀 Lihat contoh tampilan katalog
+      </a>
     </header>
 
     <div v-if="!result" class="card">

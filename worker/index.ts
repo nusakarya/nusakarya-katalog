@@ -1,6 +1,7 @@
 import type { CatalogSubmission, CreateCatalogPayload, CreateCatalogResponse } from '../src/types'
 import type { Env } from './env'
 import { buildWaLink, renderCatalogPage } from './catalogPage'
+import { DEMO_SLUG, DEMO_SUBMISSION, NUSAKARYA_WHATSAPP } from './demoData'
 import { checkRateLimit, generateUniqueSlug, getSubmission, incrementCounter, saveSubmission } from './storage'
 
 const MAX_PRODUCTS = 6
@@ -80,6 +81,12 @@ const handleCreateCatalog = async (request: Request, env: Env): Promise<Response
 }
 
 const handleCatalogPage = async (slug: string, env: Env): Promise<Response> => {
+  if (slug === DEMO_SLUG) {
+    return new Response(renderCatalogPage(DEMO_SUBMISSION, { isDemo: true }), {
+      headers: { 'Content-Type': 'text/html; charset=UTF-8' },
+    })
+  }
+
   const submission = await getSubmission(env.CATALOG_KV, slug)
   if (!submission) {
     return new Response('Katalog tidak ditemukan.', { status: 404 })
@@ -90,7 +97,16 @@ const handleCatalogPage = async (slug: string, env: Env): Promise<Response> => {
   })
 }
 
+// Demo clicks never reach a real UMKM's WhatsApp — they route to NusaKarya's own
+// number with a message about creating a catalog, regardless of which product/button
+// was clicked, so the example page doubles as a lead-gen path.
+const DEMO_WA_MESSAGE = 'Halo NusaKarya, saya lihat contoh katalog dan tertarik buat punya sendiri.'
+
 const handleWaRedirect = async (slug: string, productIndex: number, env: Env): Promise<Response> => {
+  if (slug === DEMO_SLUG) {
+    return Response.redirect(buildWaLink(NUSAKARYA_WHATSAPP, DEMO_WA_MESSAGE), 302)
+  }
+
   const submission = await getSubmission(env.CATALOG_KV, slug)
   if (!submission) {
     return new Response('Katalog tidak ditemukan.', { status: 404 })
@@ -105,6 +121,10 @@ const handleWaRedirect = async (slug: string, productIndex: number, env: Env): P
 }
 
 const handleWaChatRedirect = async (slug: string, env: Env): Promise<Response> => {
+  if (slug === DEMO_SLUG) {
+    return Response.redirect(buildWaLink(NUSAKARYA_WHATSAPP, DEMO_WA_MESSAGE), 302)
+  }
+
   const submission = await getSubmission(env.CATALOG_KV, slug)
   if (!submission) {
     return new Response('Katalog tidak ditemukan.', { status: 404 })

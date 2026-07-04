@@ -42,7 +42,8 @@ const MONOGRAM_PALETTE = [
   'linear-gradient(135deg, #4338ca, #818cf8)',
 ]
 
-export const renderCatalogPage = (data: CatalogSubmission): string => {
+export const renderCatalogPage = (data: CatalogSubmission, options?: { isDemo?: boolean }): string => {
+  const isDemo = options?.isDemo ?? false
   const safeName = escapeHtml(data.businessName)
   const safeTagline = escapeHtml(data.tagline)
   const safeCity = escapeHtml(data.city)
@@ -196,6 +197,25 @@ export const renderCatalogPage = (data: CatalogSubmission): string => {
       }
       .order-btn:hover { background: #15803d; transform: translateY(-1px); }
 
+      .demo-banner {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.65rem 1rem;
+        text-align: center;
+        background: #fef3c7;
+        color: #92400e;
+        font-size: 0.85rem;
+        font-weight: 600;
+      }
+      .demo-banner a {
+        color: #92400e;
+        text-decoration: underline;
+        text-underline-offset: 2px;
+      }
+
       .share-bar {
         display: flex;
         justify-content: center;
@@ -258,6 +278,11 @@ export const renderCatalogPage = (data: CatalogSubmission): string => {
     </style>
   </head>
   <body>
+    ${
+      isDemo
+        ? `<div class="demo-banner">👀 Ini contoh tampilan katalog. <a href="/">Buat punya sendiri, gratis →</a></div>`
+        : ''
+    }
     <div class="hero">
       <div class="hero__blob hero__blob--one" aria-hidden="true"></div>
       <div class="hero__blob hero__blob--two" aria-hidden="true"></div>
