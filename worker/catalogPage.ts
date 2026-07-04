@@ -18,6 +18,13 @@ const isSafeUrl = (value: string | undefined): value is string => {
   }
 }
 
+// Product photos additionally allow data:image/ URIs (used by the fixed demo
+// catalog's hand-drawn SVG icons) — safe here because <img> never executes
+// script embedded in an SVG, unlike <object>/<iframe>. mapsUrl and other real
+// navigable links stay on isSafeUrl (http/https only).
+const isSafeImageSrc = (value: string | undefined): value is string =>
+  Boolean(value) && (value!.startsWith('data:image/') || isSafeUrl(value))
+
 export const buildWaLink = (whatsapp: string, message: string): string =>
   `https://wa.me/${whatsapp}?text=${encodeURIComponent(message)}`
 
@@ -53,7 +60,7 @@ export const renderCatalogPage = (data: CatalogSubmission, options?: { isDemo?: 
     .map((product, index) => {
       const productName = escapeHtml(product.name)
       const productPrice = escapeHtml(product.price)
-      const mediaHtml = isSafeUrl(product.imageUrl)
+      const mediaHtml = isSafeImageSrc(product.imageUrl)
         ? `<img class="product__image" src="${escapeHtml(product.imageUrl)}" alt="${productName}" loading="lazy" />`
         : `<div class="product__monogram" style="background: ${MONOGRAM_PALETTE[index % MONOGRAM_PALETTE.length]}">${escapeHtml(getInitials(product.name))}</div>`
 

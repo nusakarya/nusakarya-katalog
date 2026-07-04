@@ -54,6 +54,7 @@ const validatePayload = (payload: CreateCatalogPayload): string => {
   for (const product of payload.products) {
     if (!product.name?.trim() || product.name.length > 60) return 'Nama produk tidak valid.'
     if (!product.price?.trim() || product.price.length > 20) return 'Harga produk tidak valid.'
+    if (product.imageUrl && product.imageUrl.length > 500) return 'URL foto produk terlalu panjang.'
   }
   return ''
 }
