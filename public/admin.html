@@ -43,6 +43,8 @@
         font-size: 0.9rem;
       }
       .btn-primary { background: #0f766e; color: #fff; }
+      .btn-ghost { background: #fff; color: #334155; border: 1px solid #cbd5e1; }
+      .btn-ghost:hover { border-color: #0f766e; color: #0f766e; }
       .btn-danger { background: #fff; color: #be123c; border: 1px solid #fecdd3; }
       .btn-danger:hover { background: #fef2f2; }
 
@@ -76,6 +78,8 @@
         <div class="token-row">
           <input id="token-input" type="password" placeholder="Admin token" autocomplete="off" />
           <button class="btn-primary" id="load-btn">Muat Data</button>
+          <button class="btn-ghost" id="download-csv-btn">⬇ Unduh CSV</button>
+          <button class="btn-ghost" id="download-json-btn">⬇ Unduh JSON</button>
         </div>
         <div id="status"></div>
       </div>
@@ -176,7 +180,38 @@
             });
         }
 
+        function downloadExport(format) {
+          localStorage.setItem(TOKEN_KEY, tokenInput.value.trim());
+          statusEl.textContent = 'Menyiapkan unduhan...';
+          fetch('/api/admin/catalogs/export?format=' + format, { headers: authHeaders() })
+            .then(function (res) {
+              if (res.status === 401) throw new Error('Token salah atau kosong.');
+              if (!res.ok) throw new Error('Gagal unduh data (' + res.status + ').');
+              return res.blob();
+            })
+            .then(function (blob) {
+              var objectUrl = URL.createObjectURL(blob);
+              var link = document.createElement('a');
+              link.href = objectUrl;
+              link.download = 'katalog-export.' + format;
+              document.body.appendChild(link);
+              link.click();
+              link.remove();
+              URL.revokeObjectURL(objectUrl);
+              statusEl.textContent = '';
+            })
+            .catch(function (err) {
+              statusEl.textContent = err.message;
+            });
+        }
+
         document.getElementById('load-btn').addEventListener('click', loadCatalogs);
+        document.getElementById('download-csv-btn').addEventListener('click', function () {
+          downloadExport('csv');
+        });
+        document.getElementById('download-json-btn').addEventListener('click', function () {
+          downloadExport('json');
+        });
         if (tokenInput.value) loadCatalogs();
       })();
     </script>

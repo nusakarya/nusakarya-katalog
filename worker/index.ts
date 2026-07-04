@@ -188,6 +188,71 @@ const handleDeleteCatalog = async (slug: string, env: Env): Promise<Response> =>
   return new Response(null, { status: 204 })
 }
 
+const csvEscape = (value: string): string =>
+  /[",\n]/.test(value) ? `"${value.replace(/"/g, '""')}"` : value
+
+const EXPORT_COLUMNS = [
+  'slug',
+  'businessName',
+  'tagline',
+  'whatsapp',
+  'city',
+  'mapsUrl',
+  'productCount',
+  'products',
+  'createdAt',
+  'views',
+  'clicks',
+  'chatClicks',
+] as const
+
+const handleExportCatalogs = async (request: Request, env: Env): Promise<Response> => {
+  const submissions = await listSubmissions(env.CATALOG_KV)
+  submissions.sort((a, b) => b.createdAt - a.createdAt)
+
+  const records = await Promise.all(
+    submissions.map(async (submission) => ({
+      slug: submission.slug,
+      businessName: submission.businessName,
+      tagline: submission.tagline,
+      whatsapp: submission.whatsapp,
+      city: submission.city,
+      mapsUrl: submission.mapsUrl ?? '',
+      productCount: submission.products.length,
+      products: submission.products.map((p) => `${p.name} (Rp ${p.price})`).join(' | '),
+      createdAt: new Date(submission.createdAt).toISOString(),
+      views: await getCounter(env.CATALOG_KV, `counter:${submission.slug}:views`),
+      clicks: await getCounter(env.CATALOG_KV, `counter:${submission.slug}:clicks`),
+      chatClicks: await getCounter(env.CATALOG_KV, `counter:${submission.slug}:chat_clicks`),
+    })),
+  )
+
+  const format = new URL(request.url).searchParams.get('format') === 'csv' ? 'csv' : 'json'
+  const filenameDate = new Date().toISOString().slice(0, 10)
+
+  if (format === 'csv') {
+    const lines = [
+      EXPORT_COLUMNS.join(','),
+      ...records.map((record) =>
+        EXPORT_COLUMNS.map((column) => csvEscape(String(record[column]))).join(','),
+      ),
+    ]
+    return new Response(lines.join('\r\n'), {
+      headers: {
+        'Content-Type': 'text/csv; charset=UTF-8',
+        'Content-Disposition': `attachment; filename="katalog-export-${filenameDate}.csv"`,
+      },
+    })
+  }
+
+  return new Response(JSON.stringify(records, null, 2), {
+    headers: {
+      'Content-Type': 'application/json',
+      'Content-Disposition': `attachment; filename="katalog-export-${filenameDate}.json"`,
+    },
+  })
+}
+
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url)
@@ -199,6 +264,9 @@ export default {
     if (url.pathname.startsWith('/api/admin/')) {
       if (!isAuthorizedAdmin(request, env)) {
         return jsonResponse({ message: 'Unauthorized' }, 401)
+      }
+      if (url.pathname === '/api/admin/catalogs/export' && request.method === 'GET') {
+        return handleExportCatalogs(request, env)
       }
       if (url.pathname === '/api/admin/catalogs' && request.method === 'GET') {
         return handleListCatalogs(env)
