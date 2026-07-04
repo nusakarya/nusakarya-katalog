@@ -267,6 +267,16 @@ export default {
       return handleCreateCatalog(request, env)
     }
 
+    // Public on purpose: a Firebase Web API key + project ID are not secrets
+    // (see Env comment). This just lets public/admin.html avoid hand-edited
+    // per-environment constants.
+    if (url.pathname === '/api/config' && request.method === 'GET') {
+      return jsonResponse({
+        firebaseApiKey: env.FIREBASE_API_KEY,
+        firebaseProjectId: env.FIREBASE_PROJECT_ID,
+      })
+    }
+
     if (url.pathname.startsWith('/api/admin/')) {
       if (!(await isAuthorizedAdmin(request, env))) {
         return jsonResponse({ message: 'Unauthorized' }, 401)

@@ -226,11 +226,10 @@
 
     <script>
       (function () {
-        // Fill these in with your Firebase project's values (Project Settings →
-        // General). The Web API key is not secret — Firebase enforces access via
-        // Auth rules and token verification, not by hiding this key.
-        var FIREBASE_API_KEY = 'REPLACE_WITH_FIREBASE_WEB_API_KEY';
-        var FIREBASE_PROJECT_ID = 'REPLACE_WITH_FIREBASE_PROJECT_ID';
+        // Fetched from the Worker at startup (see /api/config) instead of being
+        // hardcoded here, so the same static file works across environments.
+        var FIREBASE_API_KEY = null;
+        var FIREBASE_PROJECT_ID = null;
 
         var STORAGE_KEY = 'nusakarya_admin_session';
         var AVATAR_PALETTE = ['#0f766e', '#0e7490', '#b45309', '#7e22ce', '#be123c', '#4338ca'];
@@ -512,12 +511,32 @@
         document.getElementById('download-json-btn').addEventListener('click', function () { downloadExport('json'); });
         searchInput.addEventListener('input', applyFilter);
 
-        var existingSession = getSession();
-        if (existingSession) {
-          showDashboard(existingSession.email);
-        } else {
-          showLogin();
-        }
+        var loginBtn = document.getElementById('login-btn');
+        loginBtn.disabled = true;
+        loginBtn.textContent = 'Memuat konfigurasi...';
+
+        fetch('/api/config')
+          .then(function (res) {
+            if (!res.ok) throw new Error('config-failed');
+            return res.json();
+          })
+          .then(function (config) {
+            FIREBASE_API_KEY = config.firebaseApiKey;
+            FIREBASE_PROJECT_ID = config.firebaseProjectId;
+            loginBtn.disabled = false;
+            loginBtn.textContent = 'Masuk';
+
+            var existingSession = getSession();
+            if (existingSession) {
+              showDashboard(existingSession.email);
+            } else {
+              showLogin();
+            }
+          })
+          .catch(function () {
+            loginStatus.textContent = 'Gagal memuat konfigurasi dari server. Coba muat ulang halaman.';
+            showLogin();
+          });
       })();
     </script>
   </body>
