@@ -12,28 +12,36 @@
         font-family: system-ui, -apple-system, sans-serif;
         background: #f1f5f9;
         color: #0f172a;
-        padding: 2rem 1rem 4rem;
       }
-      .container { max-width: 960px; margin: 0 auto; }
-      h1 { font-size: 1.4rem; margin: 0 0 0.25rem; }
-      .subtitle { color: #64748b; margin: 0 0 1.5rem; font-size: 0.9rem; }
+      a { color: inherit; }
+      .container { max-width: 1080px; margin: 0 auto; padding: 0 1rem 4rem; }
 
-      .token-card {
-        background: #fff;
-        border: 1px solid #e2e8f0;
-        border-radius: 1rem;
-        padding: 1.25rem;
-        margin-bottom: 1.5rem;
+      /* ---- Top bar ---- */
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 1.25rem 0;
       }
-      .token-row { display: flex; gap: 0.6rem; flex-wrap: wrap; }
-      input[type='password'], input[type='text'] {
-        flex: 1;
-        min-width: 200px;
-        padding: 0.55rem 0.75rem;
-        border-radius: 0.5rem;
-        border: 1px solid #cbd5e1;
-        font-size: 0.9rem;
+      .topbar__brand { display: flex; align-items: center; gap: 0.6rem; }
+      .topbar__logo {
+        width: 36px;
+        height: 36px;
+        border-radius: 0.6rem;
+        background: linear-gradient(135deg, #0f766e, #0e7490);
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        font-size: 0.95rem;
       }
+      .topbar h1 { font-size: 1.15rem; margin: 0; }
+      .topbar__sub { font-size: 0.8rem; color: #64748b; margin: 0; }
+      .signed-in-as { font-size: 0.85rem; color: #475569; }
+
+      /* ---- Buttons ---- */
       button {
         cursor: pointer;
         border: none;
@@ -41,60 +49,216 @@
         padding: 0.55rem 1rem;
         font-weight: 600;
         font-size: 0.9rem;
+        font-family: inherit;
       }
       .btn-primary { background: #0f766e; color: #fff; }
+      .btn-primary:hover { background: #115e59; }
       .btn-ghost { background: #fff; color: #334155; border: 1px solid #cbd5e1; }
       .btn-ghost:hover { border-color: #0f766e; color: #0f766e; }
       .btn-danger { background: #fff; color: #be123c; border: 1px solid #fecdd3; }
       .btn-danger:hover { background: #fef2f2; }
+      button:disabled { opacity: 0.6; cursor: not-allowed; }
 
-      #status { margin-top: 0.6rem; font-size: 0.85rem; color: #be123c; }
+      /* ---- Login view ---- */
+      #login-view {
+        min-height: 80vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .login-card {
+        width: 100%;
+        max-width: 360px;
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 1rem;
+        padding: 2rem;
+        text-align: center;
+      }
+      .login-card__logo {
+        width: 52px;
+        height: 52px;
+        margin: 0 auto 1rem;
+        border-radius: 999px;
+        background: linear-gradient(135deg, #0f766e, #0e7490);
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+      }
+      .login-card h2 { margin: 0 0 0.25rem; font-size: 1.15rem; }
+      .login-card p.hint { color: #64748b; font-size: 0.85rem; margin: 0 0 1.25rem; }
+      .field { margin-bottom: 0.9rem; text-align: left; }
+      .field label { display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.3rem; color: #334155; }
+      .field input {
+        width: 100%;
+        padding: 0.6rem 0.75rem;
+        border-radius: 0.5rem;
+        border: 1px solid #cbd5e1;
+        font-size: 0.9rem;
+      }
+      .field input:focus { outline: 2px solid #0f766e; outline-offset: 1px; }
 
-      table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 1rem; overflow: hidden; }
-      th, td { padding: 0.65rem 0.8rem; text-align: left; font-size: 0.85rem; border-bottom: 1px solid #e2e8f0; }
-      th { background: #f8fafc; font-weight: 700; color: #475569; }
+      /* ---- Stat cards ---- */
+      .stats-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 0.75rem;
+        margin: 1.25rem 0;
+      }
+      .stat-card {
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.85rem;
+        padding: 0.9rem 1rem;
+      }
+      .stat-card__value { font-size: 1.4rem; font-weight: 800; color: #0f766e; }
+      .stat-card__label { font-size: 0.78rem; color: #64748b; margin-top: 0.15rem; }
+
+      /* ---- Toolbar ---- */
+      .toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.6rem;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 0.9rem;
+      }
+      .toolbar input[type='search'] {
+        padding: 0.55rem 0.8rem;
+        border-radius: 0.5rem;
+        border: 1px solid #cbd5e1;
+        min-width: 220px;
+        font-size: 0.88rem;
+      }
+      .toolbar__actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+
+      #status { margin: 0.5rem 0; font-size: 0.85rem; color: #be123c; }
+
+      /* ---- Table ---- */
+      .table-scroll {
+        overflow-x: auto;
+        border-radius: 1rem;
+        border: 1px solid #e2e8f0;
+        background: #fff;
+      }
+      table { width: 100%; border-collapse: collapse; min-width: 720px; }
+      th, td { padding: 0.65rem 0.9rem; text-align: left; font-size: 0.85rem; border-bottom: 1px solid #eef2f6; white-space: nowrap; }
+      th { background: #f8fafc; font-weight: 700; color: #475569; position: sticky; top: 0; }
       tr:last-child td { border-bottom: none; }
+      tr:hover td { background: #f8fafc; }
       td a { color: #0f766e; font-weight: 600; text-decoration: none; }
-      .empty { padding: 2rem; text-align: center; color: #64748b; }
+      td a:hover { text-decoration: underline; }
+      .biz-cell { display: flex; align-items: center; gap: 0.6rem; }
+      .biz-avatar {
+        width: 30px;
+        height: 30px;
+        border-radius: 999px;
+        color: #fff;
+        font-size: 0.7rem;
+        font-weight: 800;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex: none;
+      }
+      .biz-name { font-weight: 600; }
+      .biz-city { font-size: 0.75rem; color: #94a3b8; }
       .count-pill {
         display: inline-block;
-        padding: 0.1rem 0.5rem;
+        padding: 0.1rem 0.55rem;
         border-radius: 999px;
         background: #f1f5f9;
         font-weight: 700;
-        font-size: 0.8rem;
+        font-size: 0.78rem;
       }
+      .empty { padding: 3rem 1rem; text-align: center; color: #64748b; }
     </style>
   </head>
   <body>
     <div class="container">
-      <h1>Admin Katalog</h1>
-      <p class="subtitle">
-        Lihat, pantau, dan hapus katalog yang terdaftar. Batas jumlah produk per katalog diatur
-        di <code>src/constants.ts</code> (MAX_PRODUCTS) — ubah nilainya lalu deploy ulang.
-      </p>
-
-      <div class="token-card">
-        <div class="token-row">
-          <input id="token-input" type="password" placeholder="Admin token" autocomplete="off" />
-          <button class="btn-primary" id="load-btn">Muat Data</button>
-          <button class="btn-ghost" id="download-csv-btn">⬇ Unduh CSV</button>
-          <button class="btn-ghost" id="download-json-btn">⬇ Unduh JSON</button>
+      <div class="topbar">
+        <div class="topbar__brand">
+          <div class="topbar__logo" aria-hidden="true">NK</div>
+          <div>
+            <h1>Admin Katalog</h1>
+            <p class="topbar__sub">Kelola katalog UMKM yang terdaftar</p>
+          </div>
         </div>
-        <div id="status"></div>
+        <div id="topbar-right"></div>
       </div>
 
-      <div id="table-wrap"></div>
+      <div id="login-view">
+        <div class="login-card">
+          <div class="login-card__logo" aria-hidden="true">🔒</div>
+          <h2>Masuk sebagai Admin</h2>
+          <p class="hint">Login pakai akun Firebase yang sudah didaftarkan sebagai admin.</p>
+          <div class="field">
+            <label for="email-input">Email</label>
+            <input id="email-input" type="email" autocomplete="username" placeholder="admin@nusakarya.id" />
+          </div>
+          <div class="field">
+            <label for="password-input">Password</label>
+            <input id="password-input" type="password" autocomplete="current-password" />
+          </div>
+          <button class="btn-primary" id="login-btn" style="width: 100%">Masuk</button>
+          <div id="login-status" style="margin-top: 0.75rem; font-size: 0.85rem; color: #be123c"></div>
+        </div>
+      </div>
+
+      <div id="dashboard-view" style="display: none">
+        <div class="stats-row" id="stats-row"></div>
+
+        <div class="toolbar">
+          <input type="search" id="search-input" placeholder="Cari nama usaha..." />
+          <div class="toolbar__actions">
+            <button class="btn-ghost" id="refresh-btn">↻ Muat Ulang</button>
+            <button class="btn-ghost" id="download-csv-btn">⬇ Unduh CSV</button>
+            <button class="btn-ghost" id="download-json-btn">⬇ Unduh JSON</button>
+          </div>
+        </div>
+
+        <div id="status"></div>
+        <div id="table-wrap"></div>
+      </div>
     </div>
 
     <script>
       (function () {
-        var TOKEN_KEY = 'nusakarya_admin_token';
-        var tokenInput = document.getElementById('token-input');
+        // Fill these in with your Firebase project's values (Project Settings →
+        // General). The Web API key is not secret — Firebase enforces access via
+        // Auth rules and token verification, not by hiding this key.
+        var FIREBASE_API_KEY = 'REPLACE_WITH_FIREBASE_WEB_API_KEY';
+        var FIREBASE_PROJECT_ID = 'REPLACE_WITH_FIREBASE_PROJECT_ID';
+
+        var STORAGE_KEY = 'nusakarya_admin_session';
+        var AVATAR_PALETTE = ['#0f766e', '#0e7490', '#b45309', '#7e22ce', '#be123c', '#4338ca'];
+
+        var loginView = document.getElementById('login-view');
+        var dashboardView = document.getElementById('dashboard-view');
+        var topbarRight = document.getElementById('topbar-right');
+        var loginStatus = document.getElementById('login-status');
         var statusEl = document.getElementById('status');
         var tableWrap = document.getElementById('table-wrap');
+        var statsRow = document.getElementById('stats-row');
+        var searchInput = document.getElementById('search-input');
 
-        tokenInput.value = localStorage.getItem(TOKEN_KEY) || '';
+        var allItems = [];
+
+        function getSession() {
+          try {
+            return JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
+          } catch (e) {
+            return null;
+          }
+        }
+        function setSession(session) {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(session));
+        }
+        function clearSession() {
+          localStorage.removeItem(STORAGE_KEY);
+        }
 
         function escapeHtml(value) {
           return String(value)
@@ -104,13 +268,102 @@
             .replace(/"/g, '&quot;');
         }
 
-        function authHeaders() {
-          return { Authorization: 'Bearer ' + tokenInput.value.trim() };
+        function initials(name) {
+          var trimmed = (name || '').trim();
+          if (!trimmed) return '?';
+          return trimmed.split(/\s+/).slice(0, 2).map(function (w) { return w[0].toUpperCase(); }).join('');
+        }
+
+        function avatarColor(slug) {
+          var sum = 0;
+          for (var i = 0; i < slug.length; i++) sum += slug.charCodeAt(i);
+          return AVATAR_PALETTE[sum % AVATAR_PALETTE.length];
+        }
+
+        async function refreshIdToken(session) {
+          var res = await fetch('https://securetoken.googleapis.com/v1/token?key=' + FIREBASE_API_KEY, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: 'grant_type=refresh_token&refresh_token=' + encodeURIComponent(session.refreshToken),
+          });
+          if (!res.ok) throw new Error('refresh-failed');
+          var data = await res.json();
+          var next = {
+            idToken: data.id_token,
+            refreshToken: data.refresh_token,
+            email: session.email,
+            expiresAt: Date.now() + Number(data.expires_in) * 1000 * 0.9,
+          };
+          setSession(next);
+          return next;
+        }
+
+        async function authedFetch(path, options) {
+          var session = getSession();
+          if (!session) throw new Error('not-signed-in');
+          if (Date.now() >= session.expiresAt) {
+            session = await refreshIdToken(session);
+          }
+          var opts = options || {};
+          opts.headers = Object.assign({}, opts.headers, { Authorization: 'Bearer ' + session.idToken });
+          var res = await fetch(path, opts);
+          if (res.status === 401) {
+            // Token may have just been rejected server-side; try one refresh + retry.
+            session = await refreshIdToken(session);
+            opts.headers.Authorization = 'Bearer ' + session.idToken;
+            res = await fetch(path, opts);
+          }
+          return res;
+        }
+
+        function showDashboard(email) {
+          loginView.style.display = 'none';
+          dashboardView.style.display = 'block';
+          topbarRight.innerHTML =
+            '<span class="signed-in-as">' + escapeHtml(email) + '</span> ' +
+            '<button class="btn-ghost" id="logout-btn">Keluar</button>';
+          document.getElementById('logout-btn').addEventListener('click', function () {
+            clearSession();
+            location.reload();
+          });
+          loadCatalogs();
+        }
+
+        function showLogin() {
+          loginView.style.display = 'flex';
+          dashboardView.style.display = 'none';
+          topbarRight.innerHTML = '';
+        }
+
+        function renderStats(items) {
+          var totals = items.reduce(
+            function (acc, item) {
+              acc.views += item.views;
+              acc.clicks += item.clicks;
+              acc.chatClicks += item.chatClicks;
+              return acc;
+            },
+            { views: 0, clicks: 0, chatClicks: 0 },
+          );
+          var cards = [
+            { label: 'Total UMKM Terdaftar', value: items.length },
+            { label: 'Total Views Katalog', value: totals.views },
+            { label: 'Total Klik Pesan', value: totals.clicks },
+            { label: 'Total Klik Chat', value: totals.chatClicks },
+          ];
+          statsRow.innerHTML = cards
+            .map(function (c) {
+              return (
+                '<div class="stat-card"><div class="stat-card__value">' + c.value +
+                '</div><div class="stat-card__label">' + c.label + '</div></div>'
+              );
+            })
+            .join('');
         }
 
         function renderTable(items) {
           if (!items.length) {
-            tableWrap.innerHTML = '<div class="empty">Belum ada katalog terdaftar.</div>';
+            tableWrap.innerHTML = '<div class="table-scroll"><div class="empty">Tidak ada katalog yang cocok.</div></div>';
             return;
           }
           var rows = items
@@ -118,8 +371,11 @@
               var created = new Date(item.createdAt).toLocaleString('id-ID');
               return (
                 '<tr data-slug="' + escapeHtml(item.slug) + '">' +
-                '<td><a href="/k/' + escapeHtml(item.slug) + '" target="_blank" rel="noopener noreferrer">' +
-                escapeHtml(item.businessName) + '</a><br><small>' + escapeHtml(item.city || '-') + '</small></td>' +
+                '<td><div class="biz-cell">' +
+                '<div class="biz-avatar" style="background:' + avatarColor(item.slug) + '">' + escapeHtml(initials(item.businessName)) + '</div>' +
+                '<div><a href="/k/' + escapeHtml(item.slug) + '" target="_blank" rel="noopener noreferrer" class="biz-name">' +
+                escapeHtml(item.businessName) + '</a><div class="biz-city">' + escapeHtml(item.city || '-') + '</div></div>' +
+                '</div></td>' +
                 '<td>' + escapeHtml(item.whatsapp) + '</td>' +
                 '<td><span class="count-pill">' + item.productCount + '</span></td>' +
                 '<td>' + item.views + '</td>' +
@@ -133,9 +389,9 @@
             .join('');
 
           tableWrap.innerHTML =
-            '<table><thead><tr>' +
+            '<div class="table-scroll"><table><thead><tr>' +
             '<th>Usaha</th><th>WhatsApp</th><th>Produk</th><th>Views</th><th>Klik Pesan</th><th>Klik Chat</th><th>Dibuat</th><th></th>' +
-            '</tr></thead><tbody>' + rows + '</tbody></table>';
+            '</tr></thead><tbody>' + rows + '</tbody></table></div>';
 
           tableWrap.querySelectorAll('[data-action="delete"]').forEach(function (btn) {
             btn.addEventListener('click', function () {
@@ -147,30 +403,41 @@
           });
         }
 
+        function applyFilter() {
+          var query = searchInput.value.trim().toLowerCase();
+          var filtered = query
+            ? allItems.filter(function (item) { return item.businessName.toLowerCase().indexOf(query) !== -1; })
+            : allItems;
+          renderTable(filtered);
+        }
+
         function loadCatalogs() {
-          localStorage.setItem(TOKEN_KEY, tokenInput.value.trim());
           statusEl.textContent = 'Memuat...';
-          fetch('/api/admin/catalogs', { headers: authHeaders() })
+          authedFetch('/api/admin/catalogs')
             .then(function (res) {
-              if (res.status === 401) throw new Error('Token salah atau kosong.');
+              if (res.status === 401) throw new Error('not-signed-in');
               if (!res.ok) throw new Error('Gagal memuat data (' + res.status + ').');
               return res.json();
             })
             .then(function (items) {
               statusEl.textContent = '';
-              renderTable(items);
+              allItems = items;
+              renderStats(items);
+              applyFilter();
             })
             .catch(function (err) {
+              if (err.message === 'not-signed-in') {
+                clearSession();
+                showLogin();
+                return;
+              }
               statusEl.textContent = err.message;
               tableWrap.innerHTML = '';
             });
         }
 
         function deleteCatalog(slug) {
-          fetch('/api/admin/catalogs/' + encodeURIComponent(slug), {
-            method: 'DELETE',
-            headers: authHeaders(),
-          })
+          authedFetch('/api/admin/catalogs/' + encodeURIComponent(slug), { method: 'DELETE' })
             .then(function (res) {
               if (!res.ok) throw new Error('Gagal menghapus (' + res.status + ').');
               loadCatalogs();
@@ -181,11 +448,9 @@
         }
 
         function downloadExport(format) {
-          localStorage.setItem(TOKEN_KEY, tokenInput.value.trim());
           statusEl.textContent = 'Menyiapkan unduhan...';
-          fetch('/api/admin/catalogs/export?format=' + format, { headers: authHeaders() })
+          authedFetch('/api/admin/catalogs/export?format=' + format)
             .then(function (res) {
-              if (res.status === 401) throw new Error('Token salah atau kosong.');
               if (!res.ok) throw new Error('Gagal unduh data (' + res.status + ').');
               return res.blob();
             })
@@ -205,14 +470,54 @@
             });
         }
 
-        document.getElementById('load-btn').addEventListener('click', loadCatalogs);
-        document.getElementById('download-csv-btn').addEventListener('click', function () {
-          downloadExport('csv');
+        function login() {
+          var email = document.getElementById('email-input').value.trim();
+          var password = document.getElementById('password-input').value;
+          loginStatus.textContent = '';
+          if (!email || !password) {
+            loginStatus.textContent = 'Isi email dan password.';
+            return;
+          }
+          fetch('https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=' + FIREBASE_API_KEY, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email: email, password: password, returnSecureToken: true }),
+          })
+            .then(function (res) {
+              return res.json().then(function (data) {
+                if (!res.ok) throw new Error(data.error && data.error.message ? data.error.message : 'Login gagal.');
+                return data;
+              });
+            })
+            .then(function (data) {
+              setSession({
+                idToken: data.idToken,
+                refreshToken: data.refreshToken,
+                email: data.email,
+                expiresAt: Date.now() + Number(data.expiresIn) * 1000 * 0.9,
+              });
+              showDashboard(data.email);
+            })
+            .catch(function (err) {
+              loginStatus.textContent = err.message;
+            });
+        }
+
+        document.getElementById('login-btn').addEventListener('click', login);
+        document.getElementById('password-input').addEventListener('keydown', function (e) {
+          if (e.key === 'Enter') login();
         });
-        document.getElementById('download-json-btn').addEventListener('click', function () {
-          downloadExport('json');
-        });
-        if (tokenInput.value) loadCatalogs();
+        document.getElementById('refresh-btn').addEventListener('click', loadCatalogs);
+        document.getElementById('download-csv-btn').addEventListener('click', function () { downloadExport('csv'); });
+        document.getElementById('download-json-btn').addEventListener('click', function () { downloadExport('json'); });
+        searchInput.addEventListener('input', applyFilter);
+
+        var existingSession = getSession();
+        if (existingSession) {
+          showDashboard(existingSession.email);
+        } else {
+          showLogin();
+        }
       })();
     </script>
   </body>

@@ -3,6 +3,7 @@ import type { CatalogSubmission, CatalogSummary, CreateCatalogPayload, CreateCat
 import type { Env } from './env'
 import { buildWaLink, renderCatalogPage } from './catalogPage'
 import { DEMO_SLUG, DEMO_SUBMISSION, NUSAKARYA_WHATSAPP } from './demoData'
+import { verifyFirebaseIdToken } from './firebaseAuth'
 import {
   checkRateLimit,
   deleteSubmission,
@@ -156,11 +157,16 @@ const handleWaChatRedirect = async (slug: string, env: Env): Promise<Response> =
   return Response.redirect(buildWaLink(submission.whatsapp, message), 302)
 }
 
-const isAuthorizedAdmin = (request: Request, env: Env): boolean => {
-  if (!env.ADMIN_TOKEN) return false
+// Only a Firebase-authenticated user whose email matches env.ADMIN_EMAIL may
+// call /api/admin/*. There's no user-management UI — this is a single-admin
+// allowlist, not a general auth system.
+const isAuthorizedAdmin = async (request: Request, env: Env): Promise<boolean> => {
+  if (!env.ADMIN_EMAIL || !env.FIREBASE_PROJECT_ID) return false
   const header = request.headers.get('authorization') ?? ''
-  const token = header.replace(/^Bearer\s+/i, '')
-  return token === env.ADMIN_TOKEN
+  const idToken = header.replace(/^Bearer\s+/i, '')
+  if (!idToken) return false
+  const identity = await verifyFirebaseIdToken(idToken, env.FIREBASE_PROJECT_ID)
+  return identity?.email?.toLowerCase() === env.ADMIN_EMAIL.toLowerCase()
 }
 
 const handleListCatalogs = async (env: Env): Promise<Response> => {
@@ -262,7 +268,7 @@ export default {
     }
 
     if (url.pathname.startsWith('/api/admin/')) {
-      if (!isAuthorizedAdmin(request, env)) {
+      if (!(await isAuthorizedAdmin(request, env))) {
         return jsonResponse({ message: 'Unauthorized' }, 401)
       }
       if (url.pathname === '/api/admin/catalogs/export' && request.method === 'GET') {
