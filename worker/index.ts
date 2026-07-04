@@ -274,6 +274,14 @@ export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url)
 
+    // The zone's dashboard-level "Always Use HTTPS" toggle isn't reachable with
+    // the API token this project deploys with, so it's enforced here instead —
+    // this is authoritative either way and doesn't depend on that setting.
+    if (url.protocol === 'http:') {
+      url.protocol = 'https:'
+      return Response.redirect(url.toString(), 301)
+    }
+
     if (url.pathname === '/api/catalog' && request.method === 'POST') {
       return handleCreateCatalog(request, env)
     }
