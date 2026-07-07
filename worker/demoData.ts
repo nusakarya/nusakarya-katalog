@@ -5,7 +5,7 @@ export const DEMO_SLUG = 'contoh'
 // Demo clicks never reach a real UMKM's phone — they route to NusaKarya's own
 // WhatsApp (see handleWaRedirect / handleWaChatRedirect), turning the example
 // page into a lead-gen path instead of a dead link.
-export const NUSAKARYA_WHATSAPP = '6285234905742'
+export const NUSAKARYA_WHATSAPP = '6285156845470'
 
 // Real photos from Wikimedia Commons (freely licensed, CC BY / CC BY-SA — see
 // each File: page for attribution), served at the 330px width because that's
